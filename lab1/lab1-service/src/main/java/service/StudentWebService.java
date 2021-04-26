@@ -4,12 +4,21 @@ import dao.PostgreSqlDAO;
 import model.Student;
 
 import java.util.List;
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+import javax.xml.ws.soap.MTOM;
 
 @WebService(serviceName = "StudentService")
+@MTOM
 public class StudentWebService {
+
+    @WebMethod(operationName = "getFile")
+    public DataHandler getFile(@WebParam(name = "fileName") String fileName) {
+        return new DataHandler(new FileDataSource(fileName));
+    }
 
     @WebMethod(operationName = "getStudentsByName")
     public List<Student> getStudentsByName(@WebParam(name = "studentName") String name) {
