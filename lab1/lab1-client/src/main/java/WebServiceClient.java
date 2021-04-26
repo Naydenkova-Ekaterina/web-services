@@ -4,6 +4,7 @@ import service.StudentService;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 
 public class WebServiceClient {
@@ -13,6 +14,7 @@ public class WebServiceClient {
         URL url = new URL("http://localhost:8081/StudentService?wsdl");
         StudentService studentService = new StudentService(url);
 
+        getFile(studentService);
         getStudentsByName(studentService);
         getStudentsBySurname(studentService);
         getStudentsByAge(studentService);
@@ -40,6 +42,15 @@ public class WebServiceClient {
         getStudentsByNameAndAgeAndGroupNumberAndFaculty(studentService);
         getStudentsBySurnameAndAgeAndGroupNumberAndFaculty(studentService);
         getStudentsByNameAndSurnameAndAgeAndGroupNumberAndFaculty(studentService);
+    }
+
+    private static void getFile(StudentService studentService) {
+        try {
+            byte[] result = studentService.getStudentWebServicePort().getFile("testImage");
+            System.out.println(Arrays.toString(result));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private static void getStudentsByName(StudentService studentService) {
