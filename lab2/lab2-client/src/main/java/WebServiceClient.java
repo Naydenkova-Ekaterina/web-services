@@ -1,44 +1,58 @@
-
 import service.Student;
 import service.StudentService;
+import service.StudentWebService;
 
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.handler.MessageContext;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class WebServiceClient {
 
     public static void main(String[] args) throws MalformedURLException {
         URL url = new URL("http://localhost:8081/StudentService?wsdl");
         StudentService studentService = new StudentService(url);
+        StudentWebService studentWebService = studentService.getStudentWebServicePort();
+
+        Map<String, Object> req_ctx = ((BindingProvider)studentWebService).getRequestContext();
+        req_ctx.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "http://localhost:8081/StudentService?wsdl");
+
+        Map<String, List<String>> headers = new HashMap<String, List<String>>();
+        headers.put("Username", Collections.singletonList("admin"));
+        headers.put("Password", Collections.singletonList("admin"));
+        req_ctx.put(MessageContext.HTTP_REQUEST_HEADERS, headers);
 
         // CRUD - lab 2
-        createStudent(studentService);
+        createStudent(studentWebService);
         List<Student> students = studentService.getStudentWebServicePort().getStudentsBySurname("Пупкин");
         printResult(students);
 
-        updateStudent(studentService);
+        updateStudent(studentWebService);
         List<Student> students2 = studentService.getStudentWebServicePort().getStudentsBySurname("Перестукин");
         printResult(students2);
 
-        deleteStudent(studentService);
+        deleteStudent(studentWebService);
         List<Student> students3 = studentService.getStudentWebServicePort().getStudentsBySurname("Перестукин");
         printResult(students3);
 
     }
 
-    private static void createStudent(StudentService studentService) {
-        Long id = studentService.getStudentWebServicePort().createStudent("Вася", "Пупкин", 33, "P4111", "ПИиКТ");
+    private static void createStudent(StudentWebService studentWebService) {
+        Long id = studentWebService.createStudent("Вася", "Пупкин", 33, "P4111", "ПИиКТ");
         System.out.println("New student was created with id = " + id);
     }
 
-    private static void updateStudent(StudentService studentService) {
-        boolean result = studentService.getStudentWebServicePort().updateStudent((long) 1, "Виктор", "Перестукин", 18, "P4211", "ПИиКТ");
+    private static void updateStudent(StudentWebService studentWebService) {
+        boolean result = studentWebService.updateStudent((long) 1, "Виктор", "Перестукин", 18, "P4211", "ПИиКТ");
         System.out.println("The result of update = " + result);
     }
 
-    private static void deleteStudent(StudentService studentService) {
-        boolean result = studentService.getStudentWebServicePort().deleteStudent((long) 1);
+    private static void deleteStudent(StudentWebService studentWebService) {
+        boolean result = studentWebService.deleteStudent((long) 1);
         System.out.println("The result of delete = " + result);
     }
 
