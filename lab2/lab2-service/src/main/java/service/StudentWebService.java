@@ -3,31 +3,75 @@ package service;
 import dao.PostgreSqlDAO;
 import model.Student;
 
+import javax.annotation.Resource;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+import javax.xml.ws.WebServiceContext;
+import javax.xml.ws.handler.MessageContext;
 import java.util.List;
+import java.util.Map;
 
 @WebService(serviceName = "StudentService")
 public class StudentWebService {
 
+    @Resource
+    private WebServiceContext wsctx;
+
+    private boolean chechAuth() {
+        MessageContext mctx = wsctx.getMessageContext();
+
+        Map http_headers = (Map) mctx.get(MessageContext.HTTP_REQUEST_HEADERS);
+        List userList = (List) http_headers.get("Username");
+        List passList = (List) http_headers.get("Password");
+
+        String username = "";
+        String password = "";
+
+        if (userList != null) {
+            username = userList.get(0).toString();
+        }
+
+        if (passList != null) {
+            password = passList.get(0).toString();
+        }
+
+        if (username.equals("admin") && password.equals("admin")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     // CRUD - lab 2
     @WebMethod(operationName = "createStudent")
-    public Long createStudent(@WebParam(name = "studentName") String name, @WebParam(name = "studentSurname") String surname, @WebParam(name = "studentAge") int age, @WebParam(name = "studentGroupNumber") String groupNumber, @WebParam(name = "studentFaculty") String faculty) {
+    public Long createStudent(@WebParam(name = "studentName") String name, @WebParam(name = "studentSurname") String surname, @WebParam(name = "studentAge") int age, @WebParam(name = "studentGroupNumber") String groupNumber, @WebParam(name = "studentFaculty") String faculty) throws Exception {
         PostgreSqlDAO dao = new PostgreSqlDAO();
-        return dao.createStudent(name, surname, age, groupNumber, faculty);
+        if (chechAuth()) {
+            return dao.createStudent(name, surname, age, groupNumber, faculty);
+        } else {
+            throw new Exception("Access denied.");
+        }
     }
 
     @WebMethod(operationName = "updateStudent")
-    public boolean updateStudent(@WebParam(name = "id") Long id, @WebParam(name = "studentName") String name, @WebParam(name = "studentSurname") String surname, @WebParam(name = "studentAge") int age, @WebParam(name = "studentGroupNumber") String groupNumber, @WebParam(name = "studentFaculty") String faculty) {
+    public boolean updateStudent(@WebParam(name = "id") Long id, @WebParam(name = "studentName") String name, @WebParam(name = "studentSurname") String surname, @WebParam(name = "studentAge") int age, @WebParam(name = "studentGroupNumber") String groupNumber, @WebParam(name = "studentFaculty") String faculty) throws Exception {
         PostgreSqlDAO dao = new PostgreSqlDAO();
-        return dao.updateStudent(id, name, surname, age, groupNumber, faculty);
+        if (chechAuth()) {
+            return dao.updateStudent(id, name, surname, age, groupNumber, faculty);
+        } else {
+            throw new Exception("Access denied.");
+        }
     }
 
     @WebMethod(operationName = "deleteStudent")
-    public boolean deleteStudent(@WebParam(name = "id") Long id) {
+    public boolean deleteStudent(@WebParam(name = "id") Long id) throws Exception {
         PostgreSqlDAO dao = new PostgreSqlDAO();
-        return dao.deleteStudent(id);
+        if (chechAuth()) {
+            return dao.deleteStudent(id);
+        } else {
+            throw new Exception("Access denied.");
+        }
     }
 
     // Lab 1
