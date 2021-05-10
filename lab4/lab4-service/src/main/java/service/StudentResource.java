@@ -1,21 +1,40 @@
 package service;
 
+import com.google.common.util.concurrent.RateLimiter;
+import com.sun.org.slf4j.internal.Logger;
+import com.sun.org.slf4j.internal.LoggerFactory;
 import dao.PostgreSqlDAO;
 import model.Student;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Path("/students")
 @Produces({MediaType.APPLICATION_JSON})
 public class StudentResource {
 
+    private Logger logger = LoggerFactory.getLogger(StudentResource.class);
+
+    private static final Double PERMITS_PER_SECONDS = 1d;
+    private static final int PERMITS_CONSUMED = 20;
+
+    private RateLimiter rateLimiter = RateLimiter.create(PERMITS_PER_SECONDS);
+
+    private AtomicInteger index = new AtomicInteger(0);
+
     @GET
     @Path("/getStudentsByName")
     public List<Student> getStudentsByName(@QueryParam("studentName") String name) {
+        int id = index.incrementAndGet();
+        logger.debug("Number of api calls = " + id);
+        double slept = rateLimiter.acquire(PERMITS_CONSUMED);
+        logger.debug("Number of seconds while sleeping = " + slept);
+
         return new PostgreSqlDAO().getStudentsByName(name);
     }
 
