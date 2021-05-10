@@ -6,14 +6,20 @@ import model.Student;
 
 import java.util.List;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 public class App {
 
     private static final String URL = "http://localhost:8080/rest/students/";
+    private static final String username = "admin";
+    private static final String password = "admin";
+    private static final String usernameAndPassword = username + ":" + password;
+    private static final String authorizationHeaderValue = "Basic " + java.util.Base64.getEncoder().encodeToString(usernameAndPassword.getBytes());
 
     public static void main(String[] args) {
+
         Client client = Client.create();
+
+        printList(getStudentsBySurname(client, "Пупкин"));
 
         // CRUD - lab 2
         createStudent(client);
@@ -33,7 +39,7 @@ public class App {
         webResource = webResource.queryParam("studentAge", String.valueOf(33));
         webResource = webResource.queryParam("studentGroupNumber", "P4111");
         webResource = webResource.queryParam("studentFaculty", "ПИиКТ");
-        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).post(ClientResponse.class);
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).header("authorization", authorizationHeaderValue).post(ClientResponse.class);
         if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
             throw new IllegalStateException("Request failed");
         }
@@ -51,7 +57,7 @@ public class App {
         webResource = webResource.queryParam("studentGroupNumber", "P4211");
         webResource = webResource.queryParam("studentFaculty", "ПИиКТ");
 
-        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).put(ClientResponse.class);
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).header("authorization", authorizationHeaderValue).put(ClientResponse.class);
         if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
             throw new IllegalStateException("Request failed");
         }
@@ -64,7 +70,7 @@ public class App {
         WebResource webResource = client.resource(URL + "deleteStudent");
         webResource = webResource.queryParam("id", String.valueOf(1));
 
-        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).delete(ClientResponse.class);
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).header("authorization", authorizationHeaderValue).delete(ClientResponse.class);
         if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
             throw new IllegalStateException("Request failed");
         }
